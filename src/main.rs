@@ -39,10 +39,10 @@ fn main() {
 
 fn word_count_in_buf_reader<R: BufRead>(buf_reader: R) -> HashMap<String, usize> {
     let mut count = HashMap::new();
-    buf_reader.lines().for_each(|line| {
+    for line in buf_reader.lines() {
         let word = line.unwrap();
         count.entry(word).and_modify(|x| *x += 1).or_insert(1);
-    });
+    }
     count
 }
 
