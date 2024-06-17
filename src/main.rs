@@ -1,9 +1,10 @@
 use clap::{CommandFactory, Parser};
 use cli_table::{
     format::{HorizontalLine, Justify, Separator, VerticalLine},
-    print_stdout, Cell, CellStruct, Style, Table,
+    print_stdout, Cell, Style, Table,
 };
 use is_terminal::IsTerminal as _;
+use itertools::Itertools;
 use std::collections::HashMap;
 use std::{
     fs::File,
@@ -54,35 +55,28 @@ fn word_count_in_buf_reader<R: BufRead>(buf_reader: R) -> HashMap<String, usize>
 }
 
 fn print_word_count_table(word_count: HashMap<String, usize>) {
-    let mut word_count_vec: Vec<(String, usize)> = word_count.into_iter().collect();
-    word_count_vec.sort_by(|a, b| b.1.cmp(&a.1));
-
-    let mut data = vec![];
-    for (word, count) in word_count_vec.into_iter() {
-        data.push(vec![word.cell(), count.cell().justify(Justify::Right)])
-    }
-
     let separator = Separator::builder()
         .title(Some(HorizontalLine::default()))
         .column(Some(VerticalLine::default()))
         .build();
-    let table = data
+
+    let table = word_count
+        .into_iter()
+        .sorted_by(|a, b| Ord::cmp(&b.1, &a.1))
+        .map(|(word, count)| vec![word.cell(), count.cell().justify(Justify::Right)])
         .table()
         .separator(separator)
         .title(vec!["Word".cell().bold(true), "Count".cell().bold(true)])
         .bold(true);
 
-    print_stdout(table);
+    print_stdout(table).unwrap();
 }
 
 fn print_word_count_csv(word_count: HashMap<String, usize>, delimiter: char) {
-    let mut word_count_vec: Vec<(String, usize)> = word_count.into_iter().collect();
-    word_count_vec.sort_by(|a, b| b.1.cmp(&a.1));
-
-    println!("{}{}{}", "word", &delimiter, "count");
-    for (word, count) in word_count_vec {
-        println!("{}{}{}", word, &delimiter, count);
-    }
+    word_count
+        .into_iter()
+        .sorted_by(|a, b| Ord::cmp(&b.1, &a.1))
+        .for_each(|(word, count)| println!("{}{}{}", word, &delimiter, count));
 }
 
 #[cfg(test)]
