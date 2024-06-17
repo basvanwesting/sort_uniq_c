@@ -7,3 +7,4 @@ license = "MIT"
 [dependencies]
 clap = { version = "4.0", features = ["derive"] }
 is-terminal = "0.4.12"
+cli-table = "0.4.7"
